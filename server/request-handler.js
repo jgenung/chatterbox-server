@@ -30,7 +30,6 @@ var defaultCorsHeaders = {
 
 var count = 0;
 var fs = require('fs');
-
 var requestHandler = function(request, response) {
 
   console.log("Serving request type " + request.method + " for url " + request.url);
@@ -55,7 +54,7 @@ var requestHandler = function(request, response) {
     case 'GET':
       statusCode = 200;
       response.writeHead(statusCode, headers);
-      response.end(JSON.stringify(storage));   
+      response.end(JSON.stringify(storage));
 
     case 'POST':
       statusCode = 201;

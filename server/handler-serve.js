@@ -29,66 +29,64 @@ var defaultCorsHeaders = {
 };
 
 var count = 0;
-var fs = require('fs');
+var database = {};
+database.results = [];
+
+//var fs = require('fs');
 
 var requestHandler = function(request, response) {
 
   console.log("Serving request type " + request.method + " for url " + request.url);
 
+  //var storage = require('./data.json');
   var statusCode;
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = "json";
 
-  try{
-    var storage = require('./data.json');
-  }catch(err){ 
-    storage = {};
-    storage.results = [];
-  }
 
-  if(request.url.indexOf( '/classes' ) === -1) {
+if ( request.url.indexOf( '/classes' ) === -1 ) {
     response.writeHead(404, headers );
     response.end('error');
   }
  
-  switch(request.method){
-    case 'GET':
-      statusCode = 200;
-      response.writeHead(statusCode, headers);
-      response.end(JSON.stringify(storage));   
+  if(request.method === 'GET' ){
+    statusCode = 200;
+    response.writeHead(statusCode, headers);
+    console.log(!database.results);
+    console.log(database.results.length);
+    response.end(JSON.stringify(database)); 
+  }
 
-    case 'POST':
-      statusCode = 201;
-      response.writeHead(statusCode, headers);
-      var body = '';
-      request.on('data', function (data) {
-        body += data;
-        var x = JSON.parse(body);
-        if(!x.objectID){
-          x.objectID = ++count;
-        }
-        storage.results.push(x);
-        fs.writeFile("./data.JSON", JSON.stringify(storage), function(err) {
-          if(err) {
-            console.log(err);
-          } else {
-            console.log("The file was saved!");
-          }
-        }); 
-      });
-      response.end();
+  else if(request.method === 'POST'){
+    statusCode = 201;
+    response.writeHead(statusCode, headers);
+    var body = '';
 
-    case 'OPTIONS':
-      statusCode = 200;
-      response.writeHead(statusCode, headers);
-      response.end();
-
-    default:
-      statusCode = 404;
-      response.writeHead(statusCode, headers);
+    request.on('data', function (data) {
+      body += data;
+      var x = JSON.parse(body);
+      if(!x.objectID){
+        x.objectID = ++count;
+      }
+      console.log(x);
+      database.results.push(x);
       response.end();
   }
+
+  else if(request.method === 'OPTIONS'){
+    statusCode = 200;
+    response.writeHead(statusCode, headers);
+    response.end();
+  }
+
+  else{ //error case
+    statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
+  }
+
 };
+
 
 exports.requestHandler = requestHandler;
 
